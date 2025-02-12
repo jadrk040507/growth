@@ -22,10 +22,10 @@ pwt %>%
   filter(isocode %in% c("MEX", "USA", "CHL", "KOR"),
          year >= 1980 & year <= 2020) %>% 
   group_by(isocode) %>% 
-  arrange(year, isocode) %>%  # Arrange in ascending order for lag() to work correctly
+  arrange(year) %>%  # Arrange in ascending order for lag() to work correctly
   reframe(
-    gy = mean(log(gdppw) - log(lag(gdppw)), na.rm = TRUE),  # Growth rate of real GDP
-    gk = mean(log(kpw) - log(lag(kpw)), na.rm = TRUE), # Growth rate of capital stock
+    gy = mean(gdppw/lag(gdppw)-1, na.rm = TRUE),  # Growth rate of real GDP
+    gk = mean(kpw/lag(kpw)-1, na.rm = TRUE), # Growth rate of capital stock
     alpha = 1 - mean(labsh, na.rm = TRUE),
     RS = gy - alpha * gk,
     Sh_TFP = RS / gy * 100,
