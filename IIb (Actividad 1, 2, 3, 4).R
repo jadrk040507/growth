@@ -3,36 +3,33 @@ rm(list = ls())
 library(pwt10)
 library(tidyverse)
 
-# Load Penn World Table
 pwt <- pwt10.01 %>% 
-  group_by(year) %>% 
-  reframe(
-    isocode,
-    year,
-    gdppw = cgdpo/emp,
-    kpw = cn/emp,
-    labsh
-  )
-
-# Check names
-names(pwt)
-
-# Filter for Mexico
-pwt %>% 
-  filter(isocode %in% c("MEX", "USA", "CHL", "KOR"),
-         year >= 1980 & year <= 2020) %>% 
+  filter(year >= 1980 & year <= 2020) %>% 
+  mutate(
+    gdppw = cgdpo / emp,  # GDP per worker
+    kpw = cn / emp        # Capital stock per worker
+  ) %>% 
   group_by(isocode) %>% 
-  arrange(year) %>%  # Arrange in ascending order for lag() to work correctly
-  reframe(
-    gy = mean(gdppw/lag(gdppw)-1, na.rm = TRUE),  # Growth rate of real GDP
-    gk = mean(kpw/lag(kpw)-1, na.rm = TRUE), # Growth rate of capital stock
-    alpha = 1 - mean(labsh, na.rm = TRUE),
-    RS = gy - alpha * gk,
-    Sh_TFP = RS / gy * 100,
-    Sh_k = gk / gy * 100
+  arrange(year) %>% 
+  mutate(
+    gy = (gdppw/lag(gdppw)-1)*100,  # GDP per worker growth rate
+    gk = (kpw/lag(kpw)-1)*100      # Capital per worker growth rate
   )
 
-# Ratio GDP per worker vesus USA
+pwt %>% 
+  group_by(isocode) %>% 
+  reframe(
+    gy = mean(gy, na.rm = TRUE),
+    gk = mean(gk, na.rm = TRUE),
+    labsh = mean(labsh, na.rm = TRUE),
+    alpha = 1 - labsh,
+    RS = gy - alpha * gk,
+    Sh_TFP = 100 * RS / gy,
+    Sh_k = 100 * alpha * gk / gy
+  ) %>%
+  filter(isocode %in% c("USA", "CHL", "KOR", "MEX"))
+
+# Ratio GDP per worker versus USA
 pwt %>% 
   filter(isocode %in% c("MEX", "USA", "CHL", "KOR"),
          year >= 1980 & year <= 2020) %>% 
@@ -44,10 +41,30 @@ pwt %>%
   ggplot(aes(year, ratio, col = isocode)) +
   geom_line(linewidth = 1) +
   labs(
-    title = "Ratio GDP per worker vesus USA",
+    title = "Ratio GDP per worker versus USA",
     y = "Ratio",
     x = "Year",
     color = "Country"
   ) +
-  scale_color_brewer(palette = "Set2") +
-  theme_minimal()
+  scale_color_viridis_d() +
+  theme_classic()
+
+# Ratio HC versus USA
+pwt %>% 
+  filter(isocode %in% c("MEX", "USA", "CHL", "KOR"),
+         year >= 1980 & year <= 2020) %>% 
+  arrange(year) %>%  # Arrange in ascending order for lag() to work correctly
+  group_by(year) %>%
+  mutate(
+    ratio = hc / hc[isocode == "USA"])  %>% # Ratio relative to USA
+  filter(isocode != "USA") %>% 
+  ggplot(aes(year, ratio, col = isocode)) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "Ratio HC versus USA",
+    y = "Ratio",
+    x = "Year",
+    color = "Country"
+  ) +
+  scale_color_viridis_d() +
+  theme_classic()
