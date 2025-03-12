@@ -34,7 +34,7 @@ aggregate(. ~ country,
           mean, na.rm = TRUE)
 
 # Plots
-countries <- c("Mexico", "United States of America", "Brazil", "Chile", "Republic of Korea")
+countries <- c("Mexico", "United States of America", "Brazil", "Chile", "Republic of Korea", "Argentina")
 
 ggplot(df[df$country %in% countries,], aes(year, y, color = country)) +
   geom_line(linewidth = 1) +
@@ -92,3 +92,4 @@ summary(lm(g ~ year + country, df[df$country %in% countries, ]))
 summary(lm(k ~ year + country, df[df$country %in% countries, ]))
 summary(lm(i ~ year + country, df[df$country %in% countries, ]))
 summary(lm(alpha ~ year + country, df[df$country %in% countries, ]))
+
