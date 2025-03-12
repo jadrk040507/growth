@@ -2,7 +2,9 @@ rm(list = ls())
 library(pwt10)
 library(tidyverse)
 library(scales)
+library(ggthemr)
 
+ggthemr('fresh')
 
 pwt <- pwt10.01
 
@@ -43,7 +45,8 @@ ggplot(df[df$country %in% countries,], aes(year, y, color = country)) +
     y = "",
     color = "Country") + 
   scale_y_continuous(labels = scales::label_dollar(), breaks = scales::breaks_extended(n = 8)) +
-  theme_gray()
+  theme(plot.title = element_text(hjust = 0.5)) 
+
 
 
 ggplot(df[df$country %in% countries,], aes(year, g, color = country)) +
@@ -53,8 +56,9 @@ ggplot(df[df$country %in% countries,], aes(year, g, color = country)) +
     title = "Growth",
     y = "",
     color = "Country") + 
-  scale_y_continuous(labels = scales::label_percent(), breaks = scales::breaks_extended(n = 8)) + 
-  theme_gray()
+  scale_y_continuous(labels = scales::label_percent(), breaks = scales::breaks_extended(n = 8)) +  
+  theme(plot.title = element_text(hjust = 0.5)) 
+
 
 
 ggplot(df[df$country %in% countries,], aes(year, k, color = country)) +
@@ -63,8 +67,9 @@ ggplot(df[df$country %in% countries,], aes(year, k, color = country)) +
     title = "Capital per capita",
     y = "",
     color = "Country") + 
-  scale_y_continuous(labels = scales::label_comma(), breaks = scales::breaks_extended(n = 8)) + 
-  theme_gray()
+  scale_y_continuous(labels = scales::label_comma(), breaks = scales::breaks_extended(n = 8)) +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
 
 
 ggplot(df[df$country %in% countries,], aes(year, i, color = country)) +
@@ -73,18 +78,24 @@ ggplot(df[df$country %in% countries,], aes(year, i, color = country)) +
     title = "Interest rate",
     y = "",
     color = "Country") + 
-  scale_y_continuous(labels = scales::label_percent(), breaks = scales::breaks_extended(n = 8)) + 
-  theme_gray()
+  scale_y_continuous(labels = scales::label_percent(), breaks = scales::breaks_extended(n = 8)) +
+  theme(plot.title = element_text(hjust = 0.5)) +
 
 
-ggplot(df[df$country %in% countries,], aes(year, alpha, color = country)) +
+
+  library(ggplot2)
+
+ggplot(df[df$country %in% countries, ], aes(x = year, y = alpha, color = country)) +
   geom_line(linewidth = 1) +
   labs(
-    title = "Capital share",
-    y = "",
+    title = "Capital Share",
+    y = "", 
     color = "Country") + 
-  scale_y_continuous(labels = scales::label_comma(), breaks = scales::breaks_extended(n = 8)) + 
-  theme_gray()
+  scale_y_continuous(labels = scales::label_comma(), breaks = scales::breaks_extended(n = 8)) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+
 
 
 # Check for time and spatial trends
