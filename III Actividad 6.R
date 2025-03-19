@@ -1,3 +1,5 @@
+# Kaldor
+
 rm(list = ls())
 library(pwt10)
 library(tidyverse)
@@ -10,14 +12,18 @@ pwt <- pwt10.01
 
 df <- pwt %>%
   group_by(country) %>%
-  # filter(country == "Mexico") %>% 
   reframe(
     year,
     y = rgdpo / pop,              # GDP per capita
     g = c(NA, diff(log(y))),      # Growth rate with proper alignment
     k = cn / cgdpo,               # Capital-output ratio
     alpha = 1 - labsh,            # Capital share
-    i = irr                       # Investment rate
+    i = irr,                      # Investment rate
+    delta,                        # Depreciation rate
+    n = c(NA, diff(log(pop))),    # Population growth
+    ly = log(y),                  # Log of GRP per capita
+    s = csh_i,                    # Rename save
+    hc                            # Human capital
   )
 
 # 1950-1970
@@ -44,7 +50,7 @@ ggplot(df[df$country %in% countries,], aes(year, y, color = country)) +
     title = "GDP per capita",
     y = "",
     color = "Country") + 
-  scale_y_continuous(labels = scales::label_dollar(), breaks = scales::breaks_extended(n = 8)) +
+  scale_y_log10(labels = scales::label_dollar(), breaks = scales::breaks_extended(n = 8)) +
   theme(plot.title = element_text(hjust = 0.5)) 
 
 
@@ -79,13 +85,11 @@ ggplot(df[df$country %in% countries,], aes(year, i, color = country)) +
     y = "",
     color = "Country") + 
   scale_y_continuous(labels = scales::label_percent(), breaks = scales::breaks_extended(n = 8)) +
-  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(plot.title = element_text(hjust = 0.5))
 
 
 
-  library(ggplot2)
-
-ggplot(df[df$country %in% countries, ], aes(x = year, y = alpha, color = country)) +
+ggplot(df[df$country %in% countries, ], aes(year, alpha, color = country)) +
   geom_line(linewidth = 1) +
   labs(
     title = "Capital Share",
@@ -95,12 +99,53 @@ ggplot(df[df$country %in% countries, ], aes(x = year, y = alpha, color = country
   theme(plot.title = element_text(hjust = 0.5))
 
 
+ggplot(df[df$country %in% countries, ], aes(year, n, color = country)) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "Population Growth",
+    y = "", 
+    color = "Country") + 
+  scale_y_continuous(labels = scales::label_comma(), breaks = scales::breaks_extended(n = 8)) +
+  theme(plot.title = element_text(hjust = 0.5))
 
 
+ggplot(df[df$country %in% countries, ], aes(year, delta, color = country)) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "Delta",
+    y = "", 
+    color = "Country") + 
+  scale_y_continuous(labels = scales::label_comma(), breaks = scales::breaks_extended(n = 8)) +
+  theme(plot.title = element_text(hjust = 0.5))
 
 # Check for time and spatial trends
-summary(lm(g ~ year + country, df[df$country %in% countries, ]))
-summary(lm(k ~ year + country, df[df$country %in% countries, ]))
-summary(lm(i ~ year + country, df[df$country %in% countries, ]))
-summary(lm(alpha ~ year + country, df[df$country %in% countries, ]))
+feols(g ~ year | country, data = df[df$country %in% countries, ], cluster = ~ country)
+feols(k ~ year | country, data = df[df$country %in% countries, ], cluster = ~ country)
+feols(i ~ year | country, data = df[df$country %in% countries, ], cluster = ~ country)
+feols(alpha ~ year | country, data = df[df$country %in% countries, ], cluster = ~ country)
+feols(delta ~ year | country, data = df[df$country %in% countries, ], cluster = ~ country)
+feols(n ~ year | country, data = df[df$country %in% countries, ], cluster = ~ country)
+
+
+# Convergence regression
+# g_{j, t} = A + B ln(y_{j, t-l}) + e_{j,t}
+
+conv_df <- df %>%
+  group_by(country) %>%
+  filter(year >= 1970 & year <= 2020) %>% 
+  reframe(
+    gy = mean(g, na.rm = TRUE),    # Mean growth rate
+    ly = first(ly),                # First `ly` value
+    s = last(s),                   # Last `s` value
+    n = last(n),                   # Last `n` value
+    delta = last(delta),           # Last `delta` value
+    hc = last(hc)                  # Last `hc` value
+  )
+
+# Convergencia no condicional
+summary(lm(gy ~ ly, conv_df))
+
+# Convergencia condicional
+summary(lm(gy ~ . -n -delta -country, conv_df))
+summary(lm(gy ~ . -country, conv_df))
 
