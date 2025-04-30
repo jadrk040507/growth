@@ -60,8 +60,8 @@ conv_df <- df %>%
 summary(lm(gy ~ ly, conv_df))
 
 # Convergencia condicional
-summary(lm(gy ~ . -n -delta -country, conv_df))
 summary(lm(gy ~ . -country, conv_df))
+summary(lm(gy ~ . -n -delta -country, conv_df))
 
 par(mfrow = c(2, 2))  
 plot(lm(gy ~ . -country, conv_df))
