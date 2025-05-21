@@ -12,7 +12,7 @@ adjusted[1] <- 1  # Initial value
 
 for (i in t) {
     if (chain[i] == 1){
-        adjusted[i + 1] <- adjusted[i] * chain[i] * 1.05
+        adjusted[i + 1] <- adjusted[i] * 1.05
     }
     else {
         adjusted[i + 1] <- adjusted[i]
