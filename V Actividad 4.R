@@ -63,3 +63,4 @@ ggplot(oecd, aes(r,s)) +
   geom_smooth(method = "lm", se = F)
 
 cor(oecd$r, oecd$s)
+

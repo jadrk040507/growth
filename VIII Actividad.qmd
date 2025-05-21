@@ -1,0 +1,24 @@
+---
+title: "VIII Reporte"
+format: pdf
+---
+
+
+```{r}
+t <- 1:10
+chain <- rbinom(10, 1, 0.7)
+adjusted <- numeric(length(t) + 1)
+adjusted[1] <- 1  # Initial value
+
+for (i in t) {
+    if (chain[i] == 1){
+        adjusted[i + 1] <- adjusted[i] * chain[i] * 1.05
+    }
+    else {
+        adjusted[i + 1] <- adjusted[i]
+    }
+}
+
+plot(adjusted, type = "l")
+```
+
